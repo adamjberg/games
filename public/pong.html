@@ -5,20 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pong</title>
   <script defer src="/js/pong.js"></script>
+  <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Creepster">
   <style>
     body {
       background-color: black;
       margin: 0;
+      color: orange;
+      font-family: "Creepster", serif;
     }
 
     .content {
-      text-align: center;
+      width: 1000px;
+      margin: 0 auto;
     }
   </style>
 </head>
 <body>
   <div class="content">
     <canvas id="pixi-canvas"></canvas>
+    <div>
+      <h1>Halloween Pong</h1>
+      <h2>Controls</h2>
+      <p>Up/Down Arrows - move paddle up and down</p>
+      <p>p - pause game</p>
+    </div>
   </div>
 </body>
 </html>

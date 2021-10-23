@@ -10,7 +10,7 @@ enum GameState {
   GAME_OVER,
 }
 
-let gameState: GameState = GameState.PAUSED;
+let gameState: GameState = GameState.PLAYING;
 
 const stageWidth = 1000;
 const stageHeight = 600;
@@ -37,6 +37,8 @@ const pointScoredSounds = [
 for (const pointScoredSound of pointScoredSounds) {
   sound.add(pointScoredSound, `/assets/pong/${pointScoredSound}.mp3`);
 }
+
+sound.add("bg-loop", `/assets/pong/2019-06-18_-_Creepy_Vibes_-_David_Fesliyan.mp3`);
 
 var backgroundTexture = Texture.from("/assets/pong/halloween-bg.jpeg");
 
@@ -76,8 +78,10 @@ function handleKeyDown(e: KeyboardEvent) {
 
   if (e.key === "p") {
     if (gameState === GameState.PAUSED) {
+      sound.resumeAll();
       gameState = GameState.PLAYING;
     } else if (gameState === GameState.PLAYING) {
+      sound.pauseAll();
       gameState = GameState.PAUSED;
     }
   }
@@ -139,28 +143,37 @@ app.ticker.add((delta) => {
     playerTwo.y += playerTwoYVelocity * delta;
   }
 
+  let paddleCollisionDetected = false;
   if (ballXVelocity < 0) {
     if (
       ball.x <= playerOne.x + playerOne.width &&
-      ball.y >= playerOne.y &&
-      ball.y <= playerOne.y + playerOne.height
+      ball.y + halfBallWidth >= playerOne.y &&
+      ball.y - halfBallWidth <= playerOne.y + playerOne.height
     ) {
+      paddleCollisionDetected = true;
       ballXVelocity *= -1;
       ballXVelocity *= ballXAcceleration;
     }
   } else {
     if (
       ball.x + halfBallWidth >= playerTwo.x &&
-      ball.y >= playerTwo.y &&
-      ball.y <= playerTwo.y + playerTwo.height
+      ball.y + halfBallWidth >= playerTwo.y &&
+      ball.y - halfBallWidth <= playerTwo.y + playerTwo.height
     ) {
+      paddleCollisionDetected = true;
       ballXVelocity *= -1;
       ballXVelocity *= ballXAcceleration;
     }
   }
 
-  ball.x += ballXVelocity * delta;
-  ball.y += ballYVelocity * delta;
+  if (!paddleCollisionDetected) {
+    if (ball.x + halfBallWidth >= stageWidth) {
+      handlePlayerOneScored();
+    }
+    if (ball.x - halfBallWidth <= 0) {
+      handlePlayerTwoScored();
+    }
+  }
 
   if (ball.y + halfBallWidth >= stageHeight) {
     ballYVelocity = -ballSpeed;
@@ -168,12 +181,10 @@ app.ticker.add((delta) => {
   if (ball.y - halfBallWidth <= 0) {
     ballYVelocity = ballSpeed;
   }
-  if (ball.x + halfBallWidth >= stageWidth) {
-    handlePlayerOneScored();
-  }
-  if (ball.x - halfBallWidth <= 0) {
-    handlePlayerTwoScored();
-  }
+  
+
+  ball.x += ballXVelocity * delta;
+  ball.y += ballYVelocity * delta;
 });
 
 function handlePlayerOneScored() {
@@ -211,6 +222,12 @@ function resetGame() {
 }
 
 function resetBall() {
+  sound.stop("bg-loop");
+
+  setTimeout(() => {
+    sound.play("bg-loop");
+  }, 1000);
+
   ballXVelocity = ballSpeed;
   ballYVelocity = ballSpeed;
 
