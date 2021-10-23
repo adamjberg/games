@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "esbuild app.ts --bundle --minify --outfile=public/js/app.js",
-    "dev": "yarn build --servedir=public"
+    "build": "esbuild app.ts --bundle --minify --outfile=../public/js/pong.js",
+    "dev": "yarn build --servedir=../public"
   },
   "dependencies": {
     "esbuild": "^0.13.8",
