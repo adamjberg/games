@@ -102,6 +102,8 @@ const halfBallWidth = ball.width * 0.5;
 let ballXVelocity = ballSpeed;
 let ballYVelocity = ballSpeed;
 
+const ballXAcceleration = 1.1;
+
 let playerTwoYVelocity = 0;
 let lastCPUStrategyUpdate = new Date().getTime();
 
@@ -119,7 +121,7 @@ app.ticker.add((delta) => {
 
   if (ballXVelocity > 0) {
     const currentTime = new Date().getTime();
-    const reactionTime = Math.random() * 200 + 100;
+    const reactionTime = 0;
     const nextStrategyUpdate = lastCPUStrategyUpdate + reactionTime;
     if (currentTime >= nextStrategyUpdate) {
       const playerTwoMidY = playerTwo.y + playerTwo.height * 0.5;
@@ -144,6 +146,7 @@ app.ticker.add((delta) => {
       ball.y <= playerOne.y + playerOne.height
     ) {
       ballXVelocity *= -1;
+      ballXVelocity *= ballXAcceleration;
     }
   } else {
     if (
@@ -152,6 +155,7 @@ app.ticker.add((delta) => {
       ball.y <= playerTwo.y + playerTwo.height
     ) {
       ballXVelocity *= -1;
+      ballXVelocity *= ballXAcceleration;
     }
   }
 
@@ -207,6 +211,9 @@ function resetGame() {
 }
 
 function resetBall() {
+  ballXVelocity = ballSpeed;
+  ballYVelocity = ballSpeed;
+
   ball.y = stageHeight * 0.5;
   ball.x = stageWidth * 0.5;
 }
