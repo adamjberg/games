@@ -1,4 +1,4 @@
-import { Application, Text, TextStyle } from "pixi.js";
+import { Application, Sprite, Text, TextStyle, Texture } from "pixi.js";
 import { Ball } from "./Ball";
 import { Paddle } from "./Paddle";
 
@@ -11,8 +11,8 @@ enum GameState {
 
 let gameState: GameState = GameState.PAUSED;
 
-const stageWidth = 550;
-const stageHeight = 400;
+const stageWidth = 1000;
+const stageHeight = 600;
 
 const app = new Application({
   view: document.getElementById("pixi-canvas") as HTMLCanvasElement,
@@ -20,6 +20,12 @@ const app = new Application({
   width: stageWidth,
   height: stageHeight,
 });
+
+var backgroundTexture = Texture.from('/assets/pong/halloween-bg.jpeg');
+
+
+var background = new Sprite(backgroundTexture);
+app.stage.addChild(background)
 
 let playerOneScore = 0;
 let playerTwoScore = 0;
