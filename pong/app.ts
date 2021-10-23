@@ -1,4 +1,4 @@
-import { Application } from "pixi.js";
+import { Application, Sprite } from "pixi.js";
 import { Ball } from "./Ball";
 import { Paddle } from "./Paddle";
 
@@ -6,10 +6,10 @@ enum GameState {
   NEW_GAME,
   PAUSED,
   PLAYING,
-  GAME_OVER
-};
+  GAME_OVER,
+}
 
-let gameState: GameState = GameState.PLAYING;
+let gameState: GameState = GameState.PAUSED;
 
 const stageWidth = 550;
 const stageHeight = 400;
@@ -21,12 +21,23 @@ const app = new Application({
   height: stageHeight,
 });
 
+let playerOneScore = 0;
+let playerTwoScore = 0;
+
+const playerSpeed = 6;
+
 const playerOne = new Paddle();
-const playerSpeed = 8;
+playerOne.x = 5;
+playerOne.y = stageHeight * 0.5 - playerOne.height * 0.5;
 app.stage.addChild(playerOne);
 
+const playerTwo = new Paddle();
+playerTwo.x = stageWidth - 5 - playerTwo.width;
+playerTwo.y = stageHeight * 0.5 - playerTwo.height * 0.5;
+app.stage.addChild(playerTwo);
+
 const keysPressed = {};
-document.addEventListener('keydown', handleKeyDown);
+document.addEventListener("keydown", handleKeyDown);
 function handleKeyDown(e: KeyboardEvent) {
   keysPressed[e.code] = true;
 
@@ -39,7 +50,7 @@ function handleKeyDown(e: KeyboardEvent) {
   }
 }
 
-document.addEventListener('keyup', handleKeyUp);
+document.addEventListener("keyup", handleKeyUp);
 function handleKeyUp(e: KeyboardEvent) {
   keysPressed[e.code] = false;
 }
@@ -49,15 +60,17 @@ function isKeyDown(code: string) {
 }
 
 const ball = new Ball();
-ball.y = stageHeight * 0.5
-ball.x = stageWidth * 0.5
-
 app.stage.addChild(ball);
+
+resetGame();
 
 const ballSpeed = 5;
 const halfBallWidth = ball.width * 0.5;
-let xVelocity = ballSpeed;
-let yVelocity = ballSpeed;
+let ballXVelocity = ballSpeed;
+let ballYVelocity = ballSpeed;
+
+let playerTwoYVelocity = 0;
+let lastCPUStrategyUpdate = new Date().getTime();
 
 app.ticker.add((delta) => {
   if (gameState === GameState.PAUSED) {
@@ -71,19 +84,72 @@ app.ticker.add((delta) => {
     playerOne.y -= playerSpeed * delta;
   }
 
-  ball.x += xVelocity * delta;
-  ball.y += yVelocity * delta;
+  if (ballXVelocity > 0) {
+    const currentTime = new Date().getTime();
+    const reactionTime = (Math.random() * 200) + 100
+    const nextStrategyUpdate = lastCPUStrategyUpdate + reactionTime;
+    if (currentTime >= nextStrategyUpdate) {
+      const playerTwoMidY = playerTwo.y + playerTwo.height * 0.5;
+      if (playerTwoMidY < ball.y) {
+        playerTwoYVelocity = playerSpeed;
+      } else if (playerTwoMidY > ball.y) {
+        playerTwoYVelocity = -playerSpeed;
+      } else {
+        playerTwoYVelocity = 0;
+      }
+
+      lastCPUStrategyUpdate = currentTime;
+    }
+
+    playerTwo.y += playerTwoYVelocity * delta;
+  }
+
+  if (ballXVelocity < 0) {
+    if (
+      ball.x <= playerOne.x + playerOne.width &&
+      ball.y >= playerOne.y &&
+      ball.y <= playerOne.y + playerOne.height
+    ) {
+      ballXVelocity *= -1;
+    }
+  } else {
+    if (
+      ball.x + halfBallWidth >= playerTwo.x &&
+      ball.y >= playerTwo.y &&
+      ball.y <= playerTwo.y + playerTwo.height
+    ) {
+      ballXVelocity *= -1;
+    }
+  }
+
+  ball.x += ballXVelocity * delta;
+  ball.y += ballYVelocity * delta;
 
   if (ball.y + halfBallWidth >= stageHeight) {
-    yVelocity = -ballSpeed;
+    ballYVelocity = -ballSpeed;
   }
   if (ball.y - halfBallWidth <= 0) {
-    yVelocity = ballSpeed;
+    ballYVelocity = ballSpeed;
   }
   if (ball.x + halfBallWidth >= stageWidth) {
-    xVelocity = -ballSpeed;
+    handlePlayerOneScored();
   }
   if (ball.x - halfBallWidth <= 0) {
-    xVelocity = ballSpeed;
+    handlePlayerTwoScored();
   }
-})
+});
+
+function handlePlayerOneScored() {
+  playerOneScore += 1;
+  resetGame();
+}
+
+function handlePlayerTwoScored() {
+  playerTwoScore += 1;
+  resetGame();
+}
+
+function resetGame() {
+  ball.y = stageHeight * 0.5;
+  ball.x = stageWidth * 0.5;
+}
