@@ -1,4 +1,4 @@
-import { Application, Sprite } from "pixi.js";
+import { Application, Text, TextStyle } from "pixi.js";
 import { Ball } from "./Ball";
 import { Paddle } from "./Paddle";
 
@@ -23,6 +23,12 @@ const app = new Application({
 
 let playerOneScore = 0;
 let playerTwoScore = 0;
+
+const textStyle = new TextStyle({ stroke: "white", fill: "white", fontWeight: "bold", align: "center" });
+
+const txtScore = new Text("0:0", textStyle);
+txtScore.x = stageWidth * 0.5 - txtScore.width * 0.5;
+app.stage.addChild(txtScore);
 
 const playerSpeed = 6;
 
@@ -141,15 +147,28 @@ app.ticker.add((delta) => {
 
 function handlePlayerOneScored() {
   playerOneScore += 1;
-  resetGame();
+  updateScoreText()
+  resetBall();
 }
 
 function handlePlayerTwoScored() {
   playerTwoScore += 1;
-  resetGame();
+  updateScoreText()
+  resetBall();
+}
+
+function updateScoreText() {
+  txtScore.text = `${playerOneScore}:${playerTwoScore}`;
 }
 
 function resetGame() {
+  playerOneScore = 0;
+  playerTwoScore = 0;
+  resetBall();
+  updateScoreText();
+}
+
+function resetBall() {
   ball.y = stageHeight * 0.5;
   ball.x = stageWidth * 0.5;
 }
