@@ -1,4 +1,5 @@
 import { Application, Sprite, Text, TextStyle, Texture } from "pixi.js";
+import { sound } from "@pixi/sound";
 import { Ball } from "./Ball";
 import { Paddle } from "./Paddle";
 
@@ -21,16 +22,36 @@ const app = new Application({
   height: stageHeight,
 });
 
-var backgroundTexture = Texture.from('/assets/pong/halloween-bg.jpeg');
+let pointScoredSoundIndex = 0;
+const pointScoredSounds = [
+  "cackle3",
+  "deeplaugh",
+  "hag_idle",
+  "wickedlaugh1",
+  "lach01",
+  "wickedlaugh1",
+  "wickedwitchlaugh",
+  "witch",
+];
 
+for (const pointScoredSound of pointScoredSounds) {
+  sound.add(pointScoredSound, `/assets/pong/${pointScoredSound}.mp3`);
+}
+
+var backgroundTexture = Texture.from("/assets/pong/halloween-bg.jpeg");
 
 var background = new Sprite(backgroundTexture);
-app.stage.addChild(background)
+app.stage.addChild(background);
 
 let playerOneScore = 0;
 let playerTwoScore = 0;
 
-const textStyle = new TextStyle({ stroke: "white", fill: "white", fontWeight: "bold", align: "center" });
+const textStyle = new TextStyle({
+  stroke: "white",
+  fill: "white",
+  fontWeight: "bold",
+  align: "center",
+});
 
 const txtScore = new Text("0:0", textStyle);
 txtScore.x = stageWidth * 0.5 - txtScore.width * 0.5;
@@ -98,7 +119,7 @@ app.ticker.add((delta) => {
 
   if (ballXVelocity > 0) {
     const currentTime = new Date().getTime();
-    const reactionTime = (Math.random() * 200) + 100
+    const reactionTime = Math.random() * 200 + 100;
     const nextStrategyUpdate = lastCPUStrategyUpdate + reactionTime;
     if (currentTime >= nextStrategyUpdate) {
       const playerTwoMidY = playerTwo.y + playerTwo.height * 0.5;
@@ -153,14 +174,25 @@ app.ticker.add((delta) => {
 
 function handlePlayerOneScored() {
   playerOneScore += 1;
-  updateScoreText()
+  playScoreSound();
+  updateScoreText();
   resetBall();
 }
 
 function handlePlayerTwoScored() {
   playerTwoScore += 1;
-  updateScoreText()
+  playScoreSound();
+  updateScoreText();
   resetBall();
+}
+
+function playScoreSound() {
+  sound.play(pointScoredSounds[pointScoredSoundIndex]);
+
+  pointScoredSoundIndex += 1;
+  if (pointScoredSoundIndex >= pointScoredSounds.length) {
+    pointScoredSoundIndex = 0;
+  }
 }
 
 function updateScoreText() {
